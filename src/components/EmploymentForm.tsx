@@ -1,4 +1,4 @@
-import { useFormik } from "formik";
+import { Formik, Form, FormikProps, useFormik } from "formik";
 import * as yup from "yup";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -16,83 +16,99 @@ const validationSchema = yup.object({
   mobile: yup.number().required(),
 });
 
-export const EmploymentForm = () => {
-  const formik = useFormik({
-    initialValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      mobile: "",
-      address: "",
-      postcode: "",
-      state: "",
-    },
-    validationSchema: validationSchema,
-    onSubmit: (values, { setSubmitting }) => {
-      setTimeout(() => {
-        alert(JSON.stringify(values, null, 2));
-        setSubmitting(false);
-      }, 400);
-    },
-  });
+const initialValues = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  mobile: "",
+  address: "",
+  postcode: "",
+  state: "",
+};
 
+export const EmploymentForm = () => {
   return (
     <div>
       <h1>Employment Form</h1>
-      <form onSubmit={formik.handleSubmit}>
-        <TextField
-          fullWidth
-          id="firstName"
-          name="firstName"
-          label="First Name"
-          value={formik.values.firstName}
-          onChange={formik.handleChange}
-          error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-          helperText={formik.touched.firstName && formik.errors.firstName}
-        />
+      <Formik
+        validateOnChange
+        initialValues={initialValues}
+        onSubmit={(values, { resetForm, setSubmitting }) => {
+          setTimeout(() => {
+            alert(JSON.stringify(values, null, 2));
+            setSubmitting(false);
+            resetForm();
+          }, 400);
+        }}
+        validationSchema={validationSchema}
+      >
+        {(props) => {
+          const {
+            values,
+            touched,
+            errors,
+            handleBlur,
+            handleChange,
+            isSubmitting,
+          } = props;
+          return (
+            <Form>
+              <TextField
+                fullWidth
+                id="firstName"
+                name="firstName"
+                label="First Name"
+                value={values.firstName}
+                onChange={handleChange}
+                error={touched.firstName && Boolean(errors.firstName)}
+                helperText={touched.firstName && errors.firstName}
+              />
 
-        <TextField
-          fullWidth
-          id="lastName"
-          name="lastName"
-          label="Last Name"
-          value={formik.values.lastName}
-          onChange={formik.handleChange}
-          error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-          helperText={formik.touched.lastName && formik.errors.lastName}
-        />
+              <TextField
+                fullWidth
+                id="lastName"
+                name="lastName"
+                label="Last Name"
+                value={values.lastName}
+                onChange={handleChange}
+                error={touched.lastName && Boolean(errors.lastName)}
+                helperText={touched.lastName && errors.lastName}
+              />
 
-        <TextField
-          fullWidth
-          id="email"
-          name="email"
-          label="Email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-        />
+              <TextField
+                fullWidth
+                id="email"
+                name="email"
+                label="Email"
+                value={values.email}
+                onChange={handleChange}
+                error={touched.email && Boolean(errors.email)}
+                helperText={touched.email && errors.email}
+              />
 
-        <TextField
-          fullWidth
-          id="mobile"
-          name="mobile"
-          label="Mobile"
-          value={formik.values.mobile}
-          onChange={formik.handleChange}
-          error={formik.touched.mobile && Boolean(formik.errors.mobile)}
-          helperText={formik.touched.mobile && formik.errors.mobile}
-        />
+              <TextField
+                fullWidth
+                id="mobile"
+                name="mobile"
+                label="Mobile"
+                value={values.mobile}
+                onChange={handleChange}
+                error={touched.mobile && Boolean(errors.mobile)}
+                helperText={touched.mobile && errors.mobile}
+              />
 
-        <Button
-          variant="contained"
-          color="primary"
-          disableElevation
-          type="submit"
-        >
-          Submit
-        </Button>
-      </form>
+              <Button
+                variant="contained"
+                color="primary"
+                disableElevation
+                type="submit"
+              >
+                Submit
+              </Button>
+            </Form>
+          );
+        }}
+      </Formik>
     </div>
   );
 };
