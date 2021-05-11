@@ -1,7 +1,8 @@
 import { FieldArray, Formik, Form, FormikProps, useFormik } from "formik";
-import * as yup from "yup";
+import yup from "../yup-extended";
 import { makeStyles } from "@material-ui/core/styles";
 import {
+  Box,
   Button,
   Container,
   FormControlLabel,
@@ -11,12 +12,15 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Typography,
 } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
-import { generate } from "shortid";
+import { nanoid } from "nanoid";
 import { PlayerForm } from "./PlayerForm";
 
 const HIGHEST_DIVISION = 8;
+
+const competitionNights = ["Monday", "Tuesday", "Wednesday", "Thursday"];
 
 const generateDivisions = (highestDivision: number) =>
   Array.from(Array(highestDivision).keys()).map((_, i) => (i + 1).toString());
@@ -29,22 +33,40 @@ const useStyles = makeStyles({
     "& > div": {
       marginBottom: "24px",
     },
+    "& input": {
+      minWidth: "250px",
+    },
+  },
+  players: {
+    "& > div": {
+      marginBottom: "24px",
+    },
   },
 });
 
 const validationSchema = yup.object().shape({
-  teamName: yup.string().required("Required"),
-  divisionPreference: yup.number(),
-  competitionNight: yup.string(),
-  delegateName: yup.string().required(),
-  delegateMobile: yup.number().required(),
-  delegateEmail: yup.string().email("Invalid email address").required(),
-  backupDelegateName: yup.string().required(),
-  backupDelegateMobile: yup.number().required(),
-  backupDelegateEmail: yup.string().email("Invalid email address").required(),
+  teamName: yup.string().required("Please enter a team name."),
+  divisionPreference: yup.number().required("Please select a division."),
+  competitionNight: yup.string().required("Please select a competition night."),
+  delegateName: yup.string().required("Please enter the delegate's name."),
+  delegateMobile: yup.number().isMobile("Invalid mobile number."),
+  delegateEmail: yup
+    .string()
+    .email("Invalid email address.")
+    .required("Please enter the delegate's email address."),
+  backupDelegateName: yup
+    .string()
+    .required("Please enter the backup delegate's name."),
+  backupDelegateMobile: yup
+    .number()
+    .required("Please enter the backup delegate's mobile."),
+  backupDelegateEmail: yup
+    .string()
+    .email("Invalid email address")
+    .required("Please enter the backup delegate's email address."),
   players: yup.array().of(
     yup.object().shape({
-      name: yup.string(),
+      name: yup.string().required("Player name is required."),
       dob: yup.number(),
     })
   ),
@@ -60,7 +82,7 @@ const initialValues = {
   backupDelegateName: "",
   backupDelegateMobile: null,
   backupDelegateEmail: "",
-  players: [{ id: generate(), name: "", mobile: null, dob: null }],
+  players: [{ id: nanoid(), name: "", mobile: null, dob: null }],
 };
 
 export interface Player {
@@ -76,12 +98,15 @@ export const TeamForm = () => {
   const divisions = generateDivisions(HIGHEST_DIVISION);
 
   return (
-    <div>
-      <h1>Team Form</h1>
+    <Container maxWidth="lg">
+      <Typography variant="h1" align="center">
+        Team Form
+      </Typography>
       <Formik
         validateOnChange
         initialValues={initialValues}
         onSubmit={(values, { resetForm, setSubmitting }) => {
+          console.log({ values });
           setTimeout(() => {
             alert(JSON.stringify(values, null, 2));
             setSubmitting(false);
@@ -101,14 +126,13 @@ export const TeamForm = () => {
             setFieldValue,
           } = props;
 
-          console.log(values.players);
+          console.log({ values });
 
           return (
             <Form>
               <div className={classes.root}>
                 <TextField
                   required
-                  variant="outlined"
                   id="teamName"
                   name="teamName"
                   label="Team Name"
@@ -116,6 +140,9 @@ export const TeamForm = () => {
                   onChange={handleChange}
                   error={touched.teamName && Boolean(errors.teamName)}
                   helperText={touched.teamName && errors.teamName}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <InputLabel htmlFor="divisionPreference">Division</InputLabel>
@@ -137,9 +164,29 @@ export const TeamForm = () => {
                   ))}
                 </RadioGroup>
 
+                <InputLabel htmlFor="competitionNight">
+                  Competition Night
+                </InputLabel>
+                <RadioGroup
+                  aria-label="division"
+                  id="competitionNight"
+                  name="competitionNight"
+                  value={values.competitionNight}
+                  onChange={handleChange}
+                >
+                  {competitionNights.map((night) => (
+                    <FormControlLabel
+                      key={night}
+                      name="competitionNight"
+                      value={night}
+                      control={<Radio />}
+                      label={night}
+                    />
+                  ))}
+                </RadioGroup>
+
                 <TextField
                   required
-                  variant="outlined"
                   id="delegateName"
                   name="delegateName"
                   label="Delegate Name"
@@ -147,11 +194,13 @@ export const TeamForm = () => {
                   onChange={handleChange}
                   error={touched.delegateName && Boolean(errors.delegateName)}
                   helperText={touched.delegateName && errors.delegateName}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <TextField
                   required
-                  variant="outlined"
                   id="delegateEmail"
                   name="delegateEmail"
                   label="Delegate Email"
@@ -159,11 +208,13 @@ export const TeamForm = () => {
                   onChange={handleChange}
                   error={touched.delegateEmail && Boolean(errors.delegateEmail)}
                   helperText={touched.delegateEmail && errors.delegateEmail}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <TextField
                   required
-                  variant="outlined"
                   id="delegateMobile"
                   name="delegateMobile"
                   label="Delegate Mobile"
@@ -173,11 +224,13 @@ export const TeamForm = () => {
                     touched.delegateMobile && Boolean(errors.delegateMobile)
                   }
                   helperText={touched.delegateMobile && errors.delegateMobile}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <TextField
                   required
-                  variant="outlined"
                   id="backupDelegateName"
                   name="backupDelegateName"
                   label="Backup Delegate Name"
@@ -190,11 +243,13 @@ export const TeamForm = () => {
                   helperText={
                     touched.backupDelegateName && errors.backupDelegateName
                   }
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <TextField
                   required
-                  variant="outlined"
                   id="backupDelegateEmail"
                   name="backupDelegateEmail"
                   label="Backup Delegate Email"
@@ -207,11 +262,13 @@ export const TeamForm = () => {
                   helperText={
                     touched.backupDelegateEmail && errors.backupDelegateEmail
                   }
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
 
                 <TextField
                   required
-                  variant="outlined"
                   id="backupDelegateMobile"
                   name="backupDelegateMobile"
                   label="Backup Delegate Mobile"
@@ -224,23 +281,29 @@ export const TeamForm = () => {
                   helperText={
                     touched.backupDelegateMobile && errors.backupDelegateMobile
                   }
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
+
                 <FieldArray name="players">
                   {({ push, remove }) => (
-                    <div>
+                    <Box className={classes.players}>
+                      <Typography variant="h2">Players</Typography>
                       {values.players &&
                         values.players.map((player, i) => (
                           <PlayerForm
-                            id={player.id}
+                            index={i}
                             name={`players[${i}]`}
                             player={player}
+                            removePlayer={remove}
                             onChange={setFieldValue}
                           />
                         ))}
                       <Button
                         onClick={() =>
                           push({
-                            id: generate(),
+                            id: nanoid(),
                             name: "",
                             mobile: null,
                             dob: null,
@@ -250,7 +313,7 @@ export const TeamForm = () => {
                         <AddIcon />
                         Add Player
                       </Button>
-                    </div>
+                    </Box>
                   )}
                 </FieldArray>
 
@@ -267,6 +330,6 @@ export const TeamForm = () => {
           );
         }}
       </Formik>
-    </div>
+    </Container>
   );
 };
