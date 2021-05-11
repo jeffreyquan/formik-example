@@ -1,18 +1,35 @@
-import { TextField } from "@material-ui/core";
+import { Box, Button, TextField, Typography } from "@material-ui/core";
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
+import { makeStyles } from "@material-ui/core/styles";
 import DateFnsUtils from "@date-io/date-fns";
-import { Player } from "./TeamForm";
-import { ChangeEvent } from "react";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { Field, FieldProps, getIn } from "formik";
+import ClearIcon from "@material-ui/icons/Clear";
+import { Player } from "./TeamForm";
+
+const useStyles = makeStyles({
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    padding: "16px",
+    border: "1px solid grey",
+    borderRadius: "4px",
+  },
+  title: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+});
 
 interface PlayerFormProps {
-  id: string;
+  index: number;
   name: string;
   player: Player;
+  removePlayer: (index: number) => void;
   onChange: (
     field: string,
     value: any,
@@ -25,7 +42,13 @@ const TextInput = ({ field, form: { errors } }: FieldProps) => {
 
   return (
     <>
-      <TextField {...field} />
+      <TextField
+        {...field}
+        label="Name"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
       {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
     </>
   );
@@ -34,14 +57,23 @@ const TextInput = ({ field, form: { errors } }: FieldProps) => {
 const DateInput = ({ field, form: { errors } }: FieldProps) => {};
 
 export const PlayerForm: React.FC<PlayerFormProps> = ({
-  id,
+  index,
   name,
   player,
+  removePlayer,
   onChange,
 }) => {
+  const classes = useStyles();
+
   return (
-    <div>
+    <div className={classes.container}>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <Box className={classes.title}>
+          <Typography variant="h2">Player {index + 1}</Typography>
+          <Button onClick={() => removePlayer(index)}>
+            <ClearIcon />
+          </Button>
+        </Box>
         <Field name={`${name}.name`} component={TextInput} />
 
         <KeyboardDatePicker
@@ -54,6 +86,9 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
           value={player.dob}
           KeyboardButtonProps={{
             "aria-label": "change date",
+          }}
+          InputLabelProps={{
+            shrink: true,
           }}
           onChange={(
             date: MaterialUiPickersDate,
