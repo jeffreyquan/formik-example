@@ -1,11 +1,14 @@
-import "./App.css";
+import { ThemeProvider } from "@material-ui/styles";
+import CssBaseline from "@material-ui/core/CssBaseline";
 import { TeamForm } from "./components/TeamForm";
+import { theme } from "./theme";
 
 function App() {
   return (
-    <div className="App">
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <TeamForm />
-    </div>
+    </ThemeProvider>
   );
 }
 
