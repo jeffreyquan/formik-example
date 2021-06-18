@@ -49,7 +49,7 @@ const validationSchema = yup.object().shape({
   divisionPreference: yup.number().required("Please select a division."),
   competitionNight: yup.string().required("Please select a competition night."),
   delegateName: yup.string().required("Please enter the delegate's name."),
-  delegateMobile: yup.number().isMobile("Invalid mobile number."),
+  delegateMobile: yup.string().isMobile("Invalid mobile number."),
   delegateEmail: yup
     .string()
     .email("Invalid email address.")
@@ -58,7 +58,8 @@ const validationSchema = yup.object().shape({
     .string()
     .required("Please enter the backup delegate's name."),
   backupDelegateMobile: yup
-    .number()
+    .string()
+    .isMobile("Invalid mobile number.")
     .required("Please enter the backup delegate's mobile."),
   backupDelegateEmail: yup
     .string()
@@ -67,28 +68,28 @@ const validationSchema = yup.object().shape({
   players: yup.array().of(
     yup.object().shape({
       name: yup.string().required("Player name is required."),
-      dob: yup.number(),
+      dob: yup.string(),
     })
   ),
 });
 
 const initialValues = {
   teamName: "",
-  divisionPreference: null,
-  competitionNight: null,
+  divisionPreference: "",
+  competitionNight: "",
   delegateName: "",
-  delegateMobile: null,
+  delegateMobile: "",
   delegateEmail: "",
   backupDelegateName: "",
-  backupDelegateMobile: null,
+  backupDelegateMobile: "",
   backupDelegateEmail: "",
-  players: [{ id: nanoid(), name: "", mobile: null, dob: null }],
+  players: [{ id: nanoid(), name: "", mobile: "", dob: "" }],
 };
 
 export interface Player {
   id: string;
   name: string;
-  mobile: number | null;
+  mobile: string | null;
   dob: string | null;
 }
 
@@ -115,19 +116,15 @@ export const TeamForm = () => {
         }}
         validationSchema={validationSchema}
       >
-        {(props) => {
-          const {
-            values,
-            touched,
-            errors,
-            handleBlur,
-            handleChange,
-            isSubmitting,
-            setFieldValue,
-          } = props;
-
-          console.log({ values });
-
+        {({
+          values,
+          touched,
+          errors,
+          handleBlur,
+          handleChange,
+          isSubmitting,
+          setFieldValue,
+        }) => {
           return (
             <Form>
               <div className={classes.root}>
@@ -136,6 +133,7 @@ export const TeamForm = () => {
                   id="teamName"
                   name="teamName"
                   label="Team Name"
+                  onBlur={handleBlur}
                   value={values.teamName}
                   onChange={handleChange}
                   error={touched.teamName && Boolean(errors.teamName)}
@@ -190,6 +188,7 @@ export const TeamForm = () => {
                   id="delegateName"
                   name="delegateName"
                   label="Delegate Name"
+                  onBlur={handleBlur}
                   value={values.delegateName}
                   onChange={handleChange}
                   error={touched.delegateName && Boolean(errors.delegateName)}
@@ -218,6 +217,7 @@ export const TeamForm = () => {
                   id="delegateMobile"
                   name="delegateMobile"
                   label="Delegate Mobile"
+                  onBlur={handleBlur}
                   value={values.delegateMobile}
                   onChange={handleChange}
                   error={
@@ -293,6 +293,7 @@ export const TeamForm = () => {
                       {values.players &&
                         values.players.map((player, i) => (
                           <PlayerForm
+                            key={player.id}
                             index={i}
                             name={`players[${i}]`}
                             player={player}
@@ -305,8 +306,8 @@ export const TeamForm = () => {
                           push({
                             id: nanoid(),
                             name: "",
-                            mobile: null,
-                            dob: null,
+                            mobile: "",
+                            dob: "",
                           })
                         }
                       >
