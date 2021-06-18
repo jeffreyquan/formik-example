@@ -6,7 +6,7 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 import DateFnsUtils from "@date-io/date-fns";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-import { Field, FieldProps, getIn } from "formik";
+import { Field, FieldProps, getIn, useField } from "formik";
 import ClearIcon from "@material-ui/icons/Clear";
 import { Player } from "./TeamForm";
 
@@ -37,26 +37,61 @@ interface PlayerFormProps {
   ) => void;
 }
 
-const TextInput = ({ field, form: { errors, touched } }: FieldProps) => {
-  const error = getIn(errors, field.name);
-  const touch = getIn(touched, field.name);
-
+const TextInput = ({
+  label,
+  name,
+  ...props
+}: {
+  label: string;
+  name: string;
+}) => {
+  const [field, meta, helpers] = useField(name);
+  const { error, touched } = meta;
   return (
     <>
       <TextField
         {...field}
-        label="Name"
+        {...props}
+        label={label}
         InputLabelProps={{
           shrink: true,
         }}
-        error={touch && Boolean(error)}
-        helperText={touch && Boolean(error) && error}
+        error={touched && Boolean(error)}
+        helperText={touched && Boolean(error) && error}
       />
     </>
   );
 };
 
-const DateInput = ({ field, form: { errors } }: FieldProps) => {};
+const DateInput = ({
+  field,
+  form: { errors, touched, setFieldValue },
+}: FieldProps) => {
+  const error = getIn(errors, field.name);
+  const touch = getIn(touched, field.name);
+
+  return (
+    <KeyboardDatePicker
+      {...field}
+      disableToolbar
+      variant="inline"
+      format="dd/MM/yyyy"
+      margin="normal"
+      label="Date of birth"
+      KeyboardButtonProps={{
+        "aria-label": "change date",
+      }}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      onChange={(date: MaterialUiPickersDate, value) => {
+        setFieldValue(field.name, date);
+      }}
+      error={touch && Boolean(error)}
+      helperText={touch && Boolean(error) && error}
+    />
+  );
+};
 
 export const PlayerForm: React.FC<PlayerFormProps> = ({
   index,
@@ -76,29 +111,8 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
             <ClearIcon />
           </Button>
         </Box>
-        <Field name={`${name}.name`} component={TextInput} />
-
-        <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="dd/MM/yyyy"
-          margin="normal"
-          name={`${name}.dob`}
-          label="Date of birth"
-          value={player.dob}
-          KeyboardButtonProps={{
-            "aria-label": "change date",
-          }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          onChange={(
-            date: MaterialUiPickersDate,
-            value?: string | null | undefined
-          ) => {
-            onChange(`${name}.dob`, date);
-          }}
-        />
+        <TextInput name={`${name}.name`} label="Name" />
+        <Field name={`${name}.dob`} component={DateInput} />
       </MuiPickersUtilsProvider>
     </div>
   );
