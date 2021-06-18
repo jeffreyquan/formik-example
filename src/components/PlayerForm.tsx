@@ -37,8 +37,9 @@ interface PlayerFormProps {
   ) => void;
 }
 
-const TextInput = ({ field, form: { errors } }: FieldProps) => {
-  const errorMessage = getIn(errors, field.name);
+const TextInput = ({ field, form: { errors, touched } }: FieldProps) => {
+  const error = getIn(errors, field.name);
+  const touch = getIn(touched, field.name);
 
   return (
     <>
@@ -48,8 +49,9 @@ const TextInput = ({ field, form: { errors } }: FieldProps) => {
         InputLabelProps={{
           shrink: true,
         }}
+        error={touch && Boolean(error)}
+        helperText={touch && Boolean(error) && error}
       />
-      {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
     </>
   );
 };
