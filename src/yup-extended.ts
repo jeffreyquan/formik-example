@@ -1,17 +1,21 @@
 import * as yup from "yup";
 import { AnyObject, Maybe } from "yup/lib/types";
 
-
-// TODO: fix mobile validator
 const phoneUtil = require("google-libphonenumber").PhoneNumberUtil.getInstance();
 
-const validateMobile = (value: number) =>
-  phoneUtil.isValidNumberForRegion(phoneUtil.parse(value, "AU"), "AU");
+const validateMobile = (value: string) => {
+  try {
+    return phoneUtil.isValidNumberForRegion(phoneUtil.parse(value, "AU"), "AU");
+  } catch (error) {
+    return false;
+  }
+}
 
-yup.addMethod<yup.NumberSchema>(yup.number, "isMobile", function (message) {
+
+yup.addMethod<yup.StringSchema>(yup.string, "isMobile", function (message) {
   return this.test("isMobile", message, function (value) {
 
-    if (value && typeof value === "number") {
+    if (value && typeof value === "string") {
       return validateMobile(value);
     }
 
@@ -21,12 +25,12 @@ yup.addMethod<yup.NumberSchema>(yup.number, "isMobile", function (message) {
 
 
 declare module "yup" {
-  interface NumberSchema<
-    TType extends Maybe<number> = number | undefined,
+  interface StringSchema<
+    TType extends Maybe<string> = string | undefined,
     TContext extends AnyObject = AnyObject,
     TOut extends TType = TType
   > extends yup.BaseSchema<TType, TContext, TOut> {
-    isMobile(message: string): NumberSchema<TType, TContext>;
+    isMobile(message: string): StringSchema<TType, TContext>;
   }
 }
 
